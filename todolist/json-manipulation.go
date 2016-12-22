@@ -54,8 +54,8 @@ func (todolist *TodoList) deleteTodo(todo string) {
 }
 
 // example input: todos add CPSC_304 => configure sql monkey due Thursday 2pm (use os.Args[1] to get the action word {add, delete, update, done, purge}
-// add\s(.+)\ =>   		matches what is between 'add' and '=>'  = REALM
-// =>\s(.+)\ due   		matches what is between '=>' and 'due'  = DESCRIPTION
+// add\s(.+)\:   		matches what is between 'add' and '=>'  = REALM
+// :\s(.+)\ due   		matches what is between '=>' and 'due'  = DESCRIPTION
 // due\s(.+)            matches everything after 'due'          = DUEDATE
 
 // returning an entry struct, created from parsing the input, and the realm, to be used appropriately in addTodo.
