@@ -40,8 +40,9 @@ func main() {
 	checkError(unmarshalErr)
 
 	w := tabwriter.NewWriter(os.Stdout, 20, 25, 15, ' ', tabwriter.TabIndent)
-	todolist.addTodo("todos add CPSC_304 => do aaaaaaaaaaaaa other thing due Thursday 9am")
 
+	parseInput(todolist)
+	//todolist.addTodo("add CPSC_317: very special assignment due Thursday 9pm")
 	format(todolist, w)
 	w.Flush()
 
