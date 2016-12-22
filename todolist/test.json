@@ -1,0 +1,40 @@
+{
+  "todos": [
+    {   "realm": "CPSC_304",
+        "entries":   [{
+            "id":           1,
+            "description":  "Check syllabus for anything to get started on",
+            "duedate":      "Wednesday 5pm",
+            "done":         true
+    },
+    {
+            "id":           2,            
+            "description":  "Check syllabus for anything to get started on",
+            "duedate":      "Wednesday 5pm",
+            "done":         true
+    }]},
+    {   "realm": "CPSC_317",
+        "entries":   [{
+            "id":           1,
+            "description":  "Also check syllabus",
+            "duedate":      "Wednesday 5pm",
+            "done":         false
+    },
+    {
+            "id":           2,            
+            "description":  "Check class times",
+            "duedate":      "Wednesday 5pm",
+            "done":         false
+    }]},
+    {   "realm": "General",
+        "entries":   [{
+            "id":           1,
+            "description":  "Pay late fees",
+            "duedate":      "Wednesday 5pm",
+            "done":         false
+    }
+   ]}
+ 
+] 
+
+}
