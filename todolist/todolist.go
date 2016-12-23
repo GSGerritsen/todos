@@ -32,8 +32,9 @@ func checkError(err error) {
 
 func main() {
 
+	// Move this stuff into read-write.go
 	var todolist TodoList
-	data, err := ioutil.ReadFile("./test.json")
+	data, err := ioutil.ReadFile("./todos.json")
 	checkError(err)
 
 	unmarshalErr := json.Unmarshal(data, &todolist)
@@ -42,7 +43,7 @@ func main() {
 	w := tabwriter.NewWriter(os.Stdout, 20, 25, 15, ' ', tabwriter.TabIndent)
 
 	parseInput(todolist)
-	//todolist.addTodo("add CPSC_317: very special assignment due Thursday 9pm")
+	handleClear()
 	format(todolist, w)
 	w.Flush()
 

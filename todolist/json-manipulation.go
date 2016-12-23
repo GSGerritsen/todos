@@ -33,6 +33,7 @@ func (todolist *TodoList) addTodo(todo string) {
 		}
 	}
 	todolist.applyIdOrdering()
+	writeToFile(todolist)
 }
 
 func (todolist *TodoList) deleteTodo(todo string) {
@@ -51,6 +52,49 @@ func (todolist *TodoList) deleteTodo(todo string) {
 		}
 	}
 	todolist.applyIdOrdering()
+	writeToFile(todolist)
+}
+
+func (todolist *TodoList) markDone(todo string) {
+	id, category := parseMarkDoneInput(todo)
+	i, _ := strconv.Atoi(id)
+
+	for _, key := range todolist.Todos {
+		if key.Realm == category {
+
+			for _, k := range key.Entries {
+				if k.ID == i {
+					k.markDone()
+				}
+			}
+		}
+	}
+	writeToFile(todolist)
+}
+
+func (todolist *TodoList) unmarkDone(todo string) {
+	id, category := parseUnmarkDoneInput(todo)
+	i, _ := strconv.Atoi(id)
+
+	for _, key := range todolist.Todos {
+		if key.Realm == category {
+
+			for _, k := range key.Entries {
+				if k.ID == i {
+					k.unmarkDone()
+				}
+			}
+		}
+	}
+	writeToFile(todolist)
+}
+
+func (entry *Entries) markDone() {
+	entry.Done = true
+}
+
+func (entry *Entries) unmarkDone() {
+	entry.Done = false
 }
 
 // example input: todos add CPSC_304 => configure sql monkey due Thursday 2pm (use os.Args[1] to get the action word {add, delete, update, done, purge}
@@ -87,6 +131,26 @@ func parseDeleteInput(todo string) (string, string) {
 
 	return id, category
 
+}
+
+func parseMarkDoneInput(todo string) (string, string) {
+	var categoryRegex = regexp.MustCompile(`done\s(.+)\ \d`)
+	var IdRegex = regexp.MustCompile(`.*?([\d]+)$`)
+
+	category := categoryRegex.FindStringSubmatch(todo)[1]
+	id := IdRegex.FindStringSubmatch(todo)[1]
+
+	return id, category
+}
+
+func parseUnmarkDoneInput(todo string) (string, string) {
+	var categoryRegex = regexp.MustCompile(`undo\s(.+)\ \d`)
+	var IdRegex = regexp.MustCompile(`.*?([\d]+)$`)
+
+	category := categoryRegex.FindStringSubmatch(todo)[1]
+	id := IdRegex.FindStringSubmatch(todo)[1]
+
+	return id, category
 }
 
 func (todos *Todos) putIdsInOrder() {

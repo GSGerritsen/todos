@@ -3,6 +3,9 @@ package main
 import (
 	"fmt"
 	"github.com/fatih/color"
+	"os"
+	"os/exec"
+	"runtime"
 	"text/tabwriter"
 )
 
@@ -33,4 +36,31 @@ func formatIfDone(todo bool) string {
 	} else {
 		return "[ ]"
 	}
+}
+
+// Adapted from: http://stackoverflow.com/questions/22891644/how-can-i-clear-the-terminal-screen-in-go
+func handleClear() {
+
+	var clearMap map[string]func()
+	clearMap = make(map[string]func())
+
+	clearMap["darwin"] = func() {
+		command := exec.Command("clear")
+		command.Stdout = os.Stdout
+		command.Run()
+	}
+
+	clearMap["windows"] = func() {
+		command := exec.Command("cls")
+		command.Stdout = os.Stdout
+		command.Run()
+	}
+
+	osFunc, ok := clearMap[runtime.GOOS]
+	if ok {
+		osFunc()
+	} else {
+		panic("Unsupported operating system")
+	}
+
 }

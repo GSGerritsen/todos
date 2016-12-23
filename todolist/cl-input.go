@@ -21,6 +21,10 @@ func parseInput(todolist TodoList) {
 		todolist.addTodo(input)
 	case "delete":
 		todolist.deleteTodo(input)
+	case "done":
+		todolist.markDone(input)
+	case "undo":
+		todolist.unmarkDone(input)
 	default:
 		fmt.Println("Something went wrong noooooo.")
 	}
