@@ -1,15 +1,23 @@
 package main
 
 import (
-	//"fmt"
+	"errors"
+	"fmt"
 	"regexp"
 	"strconv"
 	"strings"
 )
 
+func handleBadInput(e error) {
+	fmt.Printf("%s\n", e)
+	return
+}
+
 // Think about edge cases? Regex sanitizing?
 func (todolist *TodoList) createCategory(todo string) {
-	category := parseAddCategoryInput(todo)
+	category, err := parseAddCategoryInput(todo)
+
+	checkError(err)
 
 	var emptySlice []*Entries
 	newCategory := Todos{Realm: category, Entries: emptySlice}
@@ -21,7 +29,9 @@ func (todolist *TodoList) createCategory(todo string) {
 
 // Think about edge cases? Deleting non-existent category?
 func (todolist *TodoList) deleteCategory(todo string) {
-	category := parseDeleteCategoryInput(todo)
+	category, err := parseDeleteCategoryInput(todo)
+
+	checkError(err)
 
 	for index, key := range todolist.Todos {
 		if key.Realm == category {
@@ -33,7 +43,9 @@ func (todolist *TodoList) deleteCategory(todo string) {
 }
 
 func (todolist *TodoList) addTodo(todo string) {
-	newEntry, realm := parseAddInput(todo)
+	newEntry, realm, err := parseAddInput(todo)
+
+	checkError(err)
 	for _, key := range todolist.Todos {
 		if key.Realm == realm {
 			key.Entries = append(key.Entries, newEntry)
@@ -45,7 +57,8 @@ func (todolist *TodoList) addTodo(todo string) {
 
 func (todolist *TodoList) deleteTodo(todo string) {
 
-	id, category := parseDeleteInput(todo)
+	id, category, err := parseDeleteInput(todo)
+	checkError(err)
 	i, _ := strconv.Atoi(id)
 
 	for _, key := range todolist.Todos {
@@ -63,7 +76,8 @@ func (todolist *TodoList) deleteTodo(todo string) {
 }
 
 func (todolist *TodoList) markDone(todo string) {
-	id, category := parseMarkDoneInput(todo)
+	id, category, err := parseMarkDoneInput(todo)
+	checkError(err)
 	i, _ := strconv.Atoi(id)
 
 	for _, key := range todolist.Todos {
@@ -80,7 +94,8 @@ func (todolist *TodoList) markDone(todo string) {
 }
 
 func (todolist *TodoList) unmarkDone(todo string) {
-	id, category := parseUnmarkDoneInput(todo)
+	id, category, err := parseUnmarkDoneInput(todo)
+	checkError(err)
 	i, _ := strconv.Atoi(id)
 
 	for _, key := range todolist.Todos {
@@ -116,21 +131,34 @@ func (entry *Entries) unmarkDone() {
 }
 
 // example input: todos addC CPSC_322
-func parseAddCategoryInput(todo string) string {
+func parseAddCategoryInput(todo string) (string, error) {
 	var categoryRegex = regexp.MustCompile(`addC\s(.*)$`)
 
-	category := categoryRegex.FindStringSubmatch(todo)[1]
+	var category string
 
-	return category
+	match := categoryRegex.FindStringSubmatch(todo)
+	if len(match) > 1 {
+		category = match[1]
+		return category, nil
+	} else {
+		return "", errors.New("No category provided! Try addC <category>")
+	}
 
 }
 
-func parseDeleteCategoryInput(todo string) string {
+func parseDeleteCategoryInput(todo string) (string, error) {
 	var categoryRegex = regexp.MustCompile(`deleteC\s(.*)$`)
 
-	category := categoryRegex.FindStringSubmatch(todo)[1]
+	var category string
 
-	return category
+	match := categoryRegex.FindStringSubmatch(todo)
+	if len(match) > 1 {
+		category = match[1]
+		return category, nil
+	} else {
+		return "", errors.New("No category provided! Try deleteC <category>")
+	}
+
 }
 
 // example input: todos add CPSC_304 => configure sql monkey due Thursday 2pm (use os.Args[1] to get the action word {add, delete, update, done, purge}
@@ -139,7 +167,7 @@ func parseDeleteCategoryInput(todo string) string {
 // due\s(.+)            matches everything after 'due'          = DUEDATE
 
 // returning an entry struct, created from parsing the input, and the realm, to be used appropriately in addTodo.
-func parseAddInput(todo string) (*Entries, string) {
+func parseAddInput(todo string) (*Entries, string, error) {
 	var realmRegex = regexp.MustCompile(`add\s(.+)\:`)
 	var descriptionRegex = regexp.MustCompile(`:\s(.+)\ due`)
 	var dueDateRegex = regexp.MustCompile(`due\s(.+)`)
@@ -147,46 +175,76 @@ func parseAddInput(todo string) (*Entries, string) {
 	// FindStringSubmatch returns the leftmost match of the expression as the first element of the return slice of strings, and any matched subexpressions (capture groups)
 	// as elements 1 and up
 
-	realm := realmRegex.FindStringSubmatch(todo)[1]
+	var realm, description, dueDate string
 
-	description := descriptionRegex.FindStringSubmatch(todo)[1]
+	realmMatch := realmRegex.FindStringSubmatch(todo)
+	descriptionMatch := descriptionRegex.FindStringSubmatch(todo)
+	dueDateMatch := dueDateRegex.FindStringSubmatch(todo)
+	if len(realmMatch) > 1 && len(descriptionMatch) > 1 && len(dueDateMatch) > 1 {
+		realm = realmMatch[1]
+		description = descriptionMatch[1]
+		dueDate = dueDateMatch[1]
+		newEntry := Entries{ID: 0, Description: strings.TrimSpace(description), Duedate: strings.TrimSpace(dueDate), Done: false}
+		return &newEntry, realm, nil
+	}
+	return nil, "", errors.New("Add todo input error")
 
-	dueDate := dueDateRegex.FindStringSubmatch(todo)[1]
-
-	newEntry := Entries{ID: 0, Description: strings.TrimSpace(description), Duedate: strings.TrimSpace(dueDate), Done: false}
-	return &newEntry, realm
 }
 
 // example input: todos delete CPSC_304 1
-func parseDeleteInput(todo string) (string, string) {
+func parseDeleteInput(todo string) (string, string, error) {
 	var categoryRegex = regexp.MustCompile(`delete\s(.+)\ \d`)
 	var IdRegex = regexp.MustCompile(`.*?([\d]+)$`)
 
-	category := categoryRegex.FindStringSubmatch(todo)[1]
-	id := IdRegex.FindStringSubmatch(todo)[1]
+	var category, id string
 
-	return id, category
+	categoryMatch := categoryRegex.FindStringSubmatch(todo)
+	idMatch := IdRegex.FindStringSubmatch(todo)
+
+	if len(categoryMatch) > 1 && len(idMatch) > 1 {
+		category = categoryMatch[1]
+		id = idMatch[1]
+		return id, category, nil
+	}
+
+	return "", "", errors.New("Delete todo input error. Missing category or ID")
 
 }
 
-func parseMarkDoneInput(todo string) (string, string) {
+func parseMarkDoneInput(todo string) (string, string, error) {
 	var categoryRegex = regexp.MustCompile(`done\s(.+)\ \d`)
 	var IdRegex = regexp.MustCompile(`.*?([\d]+)$`)
 
-	category := categoryRegex.FindStringSubmatch(todo)[1]
-	id := IdRegex.FindStringSubmatch(todo)[1]
+	var id, category string
 
-	return id, category
+	categoryMatch := categoryRegex.FindStringSubmatch(todo)
+	idMatch := IdRegex.FindStringSubmatch(todo)
+
+	if len(categoryMatch) > 1 && len(idMatch) > 1 {
+		id = idMatch[1]
+		category = categoryMatch[1]
+		return id, category, nil
+	}
+
+	return "", "", errors.New("Mark done input error. Try done <category> <ID>")
 }
 
-func parseUnmarkDoneInput(todo string) (string, string) {
+func parseUnmarkDoneInput(todo string) (string, string, error) {
 	var categoryRegex = regexp.MustCompile(`undo\s(.+)\ \d`)
 	var IdRegex = regexp.MustCompile(`.*?([\d]+)$`)
 
-	category := categoryRegex.FindStringSubmatch(todo)[1]
-	id := IdRegex.FindStringSubmatch(todo)[1]
+	var id, category string
 
-	return id, category
+	categoryMatch := categoryRegex.FindStringSubmatch(todo)
+	idMatch := IdRegex.FindStringSubmatch(todo)
+
+	if len(categoryMatch) > 1 && len(idMatch) > 1 {
+		id = idMatch[1]
+		category = categoryMatch[1]
+		return id, category, nil
+	}
+
+	return "", "", errors.New("Mark undone input error. Try undo <category> <ID>")
 }
 
 func (todos *Todos) putIdsInOrder() {
