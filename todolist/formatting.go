@@ -18,12 +18,14 @@ func format(todos TodoList, w *tabwriter.Writer) {
 	yellow := color.New(color.FgHiGreen).SprintFunc()
 
 	for _, todo := range todos.Todos {
+
 		fmt.Fprintf(w, "%s\n", red(todo.Realm))
 
 		for _, entry := range todo.Entries {
 			fmt.Fprintf(w, "%s\t%s\t%s\t%s\t\n", yellow(entry.ID), formatIfDone(entry.Done), entry.Duedate, entry.Description)
 		}
 	}
+
 }
 
 func formatIfDone(todo bool) string {

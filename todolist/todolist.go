@@ -40,11 +40,12 @@ func main() {
 	unmarshalErr := json.Unmarshal(data, &todolist)
 	checkError(unmarshalErr)
 
-	w := tabwriter.NewWriter(os.Stdout, 20, 25, 15, ' ', tabwriter.TabIndent)
+	w := tabwriter.NewWriter(os.Stdout, 30, 35, 15, ' ', tabwriter.TabIndent)
 
 	parseInput(todolist)
 	handleClear()
-	format(todolist, w)
+	updatedTodolist := readUpdatedFile()
+	format(updatedTodolist, w)
 	w.Flush()
 
 }

@@ -19,14 +19,23 @@ func parseInput(todolist TodoList) {
 	switch command {
 	case "add":
 		todolist.addTodo(input)
+	case "addC":
+		todolist.createCategory(input)
+	case "deleteC":
+		todolist.deleteCategory(input)
 	case "delete":
 		todolist.deleteTodo(input)
 	case "done":
 		todolist.markDone(input)
 	case "undo":
 		todolist.unmarkDone(input)
+	case "purge":
+		todolist.purge()
 	default:
 		fmt.Println("Something went wrong noooooo.")
 	}
 
 }
+
+// chain of calls: parseInput -> createCategory -> parseAddCategoryInput -> writeToFile -> handleClear -> format
+//
