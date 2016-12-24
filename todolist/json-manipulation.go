@@ -8,21 +8,28 @@ import (
 )
 
 // Think about edge cases? Regex sanitizing?
-func (todolist *TodoList) createCategory(category string) {
+func (todolist *TodoList) createCategory(todo string) {
+	category := parseAddCategoryInput(todo)
 
 	var emptySlice []*Entries
-	newCategory := &Todos{Realm: category, Entries: emptySlice}
-	todolist.Todos = append(todolist.Todos, newCategory)
+	newCategory := Todos{Realm: category, Entries: emptySlice}
+	todolist.Todos = append(todolist.Todos, &newCategory)
+
+	writeToFile(todolist)
 
 }
 
 // Think about edge cases? Deleting non-existent category?
-func (todolist *TodoList) deleteCategory(category string) {
+func (todolist *TodoList) deleteCategory(todo string) {
+	category := parseDeleteCategoryInput(todo)
+
 	for index, key := range todolist.Todos {
 		if key.Realm == category {
 			todolist.Todos = append(todolist.Todos[:index], todolist.Todos[index+1:]...)
+			break
 		}
 	}
+	writeToFile(todolist)
 }
 
 func (todolist *TodoList) addTodo(todo string) {
@@ -89,12 +96,41 @@ func (todolist *TodoList) unmarkDone(todo string) {
 	writeToFile(todolist)
 }
 
+func (todolist *TodoList) purge() {
+	for _, key := range todolist.Todos {
+		for i := len(key.Entries) - 1; i >= 0; i-- {
+			if key.Entries[i].Done == true {
+				key.Entries = append(key.Entries[:i], key.Entries[i+1:]...)
+			}
+		}
+	}
+	writeToFile(todolist)
+}
+
 func (entry *Entries) markDone() {
 	entry.Done = true
 }
 
 func (entry *Entries) unmarkDone() {
 	entry.Done = false
+}
+
+// example input: todos addC CPSC_322
+func parseAddCategoryInput(todo string) string {
+	var categoryRegex = regexp.MustCompile(`addC\s(.*)$`)
+
+	category := categoryRegex.FindStringSubmatch(todo)[1]
+
+	return category
+
+}
+
+func parseDeleteCategoryInput(todo string) string {
+	var categoryRegex = regexp.MustCompile(`deleteC\s(.*)$`)
+
+	category := categoryRegex.FindStringSubmatch(todo)[1]
+
+	return category
 }
 
 // example input: todos add CPSC_304 => configure sql monkey due Thursday 2pm (use os.Args[1] to get the action word {add, delete, update, done, purge}
