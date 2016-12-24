@@ -20,3 +20,13 @@ func writeToFile(todolist *TodoList) {
 	error := ioutil.WriteFile("./todos.json", j, 0644)
 	check(error)
 }
+
+func readUpdatedFile() TodoList {
+	var todolist TodoList
+	data, err := ioutil.ReadFile("./todos.json")
+	checkError(err)
+
+	unmarshalErr := json.Unmarshal(data, &todolist)
+	checkError(unmarshalErr)
+	return todolist
+}
