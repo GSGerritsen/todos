@@ -13,7 +13,6 @@ func handleBadInput(e error) {
 	return
 }
 
-// Think about edge cases? Regex sanitizing?
 func (todolist *TodoList) createCategory(todo string) {
 	category, err := parseAddCategoryInput(todo)
 
@@ -24,10 +23,8 @@ func (todolist *TodoList) createCategory(todo string) {
 	todolist.Todos = append(todolist.Todos, &newCategory)
 
 	writeToFile(todolist)
-
 }
 
-// Think about edge cases? Deleting non-existent category?
 func (todolist *TodoList) deleteCategory(todo string) {
 	category, err := parseDeleteCategoryInput(todo)
 
@@ -168,7 +165,7 @@ func parseDeleteCategoryInput(todo string) (string, error) {
 
 // returning an entry struct, created from parsing the input, and the realm, to be used appropriately in addTodo.
 func parseAddInput(todo string) (*Entries, string, error) {
-	var realmRegex = regexp.MustCompile(`add\s(.+)\:`)
+	var realmRegex = regexp.MustCompile(`(add|a)\s(.+)\:`)
 	var descriptionRegex = regexp.MustCompile(`:\s(.+)\ due`)
 	var dueDateRegex = regexp.MustCompile(`due\s(.+)`)
 
@@ -181,7 +178,7 @@ func parseAddInput(todo string) (*Entries, string, error) {
 	descriptionMatch := descriptionRegex.FindStringSubmatch(todo)
 	dueDateMatch := dueDateRegex.FindStringSubmatch(todo)
 	if len(realmMatch) > 1 && len(descriptionMatch) > 1 && len(dueDateMatch) > 1 {
-		realm = realmMatch[1]
+		realm = realmMatch[2]
 		description = descriptionMatch[1]
 		dueDate = dueDateMatch[1]
 		newEntry := Entries{ID: 0, Description: strings.TrimSpace(description), Duedate: strings.TrimSpace(dueDate), Done: false}
@@ -212,7 +209,7 @@ func parseDeleteInput(todo string) (string, string, error) {
 }
 
 func parseMarkDoneInput(todo string) (string, string, error) {
-	var categoryRegex = regexp.MustCompile(`done\s(.+)\ \d`)
+	var categoryRegex = regexp.MustCompile(`(done|d)\s(.+)\ \d`)
 	var IdRegex = regexp.MustCompile(`.*?([\d]+)$`)
 
 	var id, category string
@@ -222,7 +219,7 @@ func parseMarkDoneInput(todo string) (string, string, error) {
 
 	if len(categoryMatch) > 1 && len(idMatch) > 1 {
 		id = idMatch[1]
-		category = categoryMatch[1]
+		category = categoryMatch[2]
 		return id, category, nil
 	}
 

@@ -19,6 +19,8 @@ func parseInput(todolist TodoList) {
 	switch command {
 	case "add":
 		todolist.addTodo(input)
+	case "a":
+		todolist.addTodo(input)
 	case "addC":
 		todolist.createCategory(input)
 	case "deleteC":
@@ -26,6 +28,8 @@ func parseInput(todolist TodoList) {
 	case "delete":
 		todolist.deleteTodo(input)
 	case "done":
+		todolist.markDone(input)
+	case "d":
 		todolist.markDone(input)
 	case "undo":
 		todolist.unmarkDone(input)
